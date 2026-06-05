@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>IA o Humano · Dinámica de arranque</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#050d1f;--navy2:#0a1730;--panel:rgba(255,255,255,.045);--border:rgba(0,212,255,.18);--border2:rgba(255,255,255,.10);
+  --cyan:#00d4ff;--purple:#7b2fff;--orange:#ff8c00;--gold:#ffcb5e;--green:#34d98a;--pink:#ff5d8f;
+  --white:#fff;--muted:#9fb3c8;--muted2:#6b7f96;--ease:cubic-bezier(.16,1,.3,1);
+  --display:'Space Grotesk',system-ui,sans-serif;--body:'Inter',system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--navy);color:var(--white);font-family:var(--body);overflow:hidden;position:fixed;inset:0;-webkit-font-smoothing:antialiased}
+#bg{position:fixed;inset:0;z-index:0}
+.orb{position:fixed;border-radius:50%;filter:blur(90px);opacity:.5;z-index:0;pointer-events:none}
+.orb.a{width:46vw;height:46vw;background:radial-gradient(circle,#0b6e8f,transparent 70%);top:-12vw;right:-8vw}
+.orb.b{width:40vw;height:40vw;background:radial-gradient(circle,#4a1e9e,transparent 70%);bottom:-14vw;left:-10vw}
+#progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:40;background:linear-gradient(90deg,var(--cyan),var(--purple));box-shadow:0 0 12px var(--cyan);transition:width .5s var(--ease)}
+.brand{position:fixed;top:16px;left:22px;z-index:30;font-family:var(--display);font-weight:600;font-size:12.5px;letter-spacing:.5px;color:var(--muted)}
+.brand b{color:#fff}.brand .dot{color:var(--cyan)}
+
+.stage{position:relative;z-index:10;height:100%;display:flex;align-items:center;justify-content:center;padding:clamp(20px,4vw,60px)}
+.card{width:100%;max-width:860px}
+.cat{font-family:var(--display);font-weight:600;letter-spacing:.28em;text-transform:uppercase;font-size:clamp(11px,1.2vw,14px);color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:12px}
+.cat::before{content:"";width:26px;height:2px;background:var(--gold);box-shadow:0 0 10px var(--gold)}
+.piece{background:var(--panel);border:1px solid var(--border2);border-radius:20px;padding:clamp(22px,3vw,38px);min-height:230px;display:flex;flex-direction:column;justify-content:center;box-shadow:0 18px 50px rgba(0,0,0,.4)}
+.q{font-family:var(--display);font-weight:600;font-size:13px;color:var(--cyan);letter-spacing:.04em;margin-bottom:14px;text-transform:uppercase}
+.text-piece{font-size:clamp(18px,2.4vw,27px);line-height:1.5;font-weight:500}
+.slogan-piece{font-family:var(--display);font-weight:700;font-size:clamp(22px,3.4vw,38px);line-height:1.25;letter-spacing:-.01em}
+.voice-piece{font-size:clamp(17px,2.2vw,24px);line-height:1.55;font-style:italic;color:#dbe7f5}
+.voice-meta{margin-top:16px;display:flex;align-items:center;gap:12px;color:var(--muted);font-size:14px;font-family:var(--display)}
+.wave{display:flex;gap:4px;align-items:flex-end;height:26px}
+.wave span{width:4px;background:var(--cyan);border-radius:2px;animation:wv 1s var(--ease) infinite alternate}
+.wave span:nth-child(2){animation-delay:.1s}.wave span:nth-child(3){animation-delay:.2s}.wave span:nth-child(4){animation-delay:.3s}.wave span:nth-child(5){animation-delay:.15s}.wave span:nth-child(6){animation-delay:.25s}.wave span:nth-child(7){animation-delay:.05s}
+@keyframes wv{from{height:6px}to{height:26px}}
+.img-wrap{display:flex;gap:22px;align-items:center;flex-wrap:wrap;justify-content:center}
+.img-wrap img{width:230px;height:230px;object-fit:cover;border-radius:18px;border:1px solid var(--border);box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.img-fallback{width:230px;height:230px;border-radius:18px;border:1px dashed var(--border);display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:13px;padding:18px;gap:8px}
+.logo-stage{display:flex;align-items:center;justify-content:center}
+.hint-line{margin-top:14px;color:var(--muted2);font-size:13.5px}
+
+.controls-row{display:flex;align-items:center;gap:14px;margin-top:22px;flex-wrap:wrap}
+.reveal-btn{font-family:var(--display);font-weight:600;font-size:15px;color:#04121f;background:linear-gradient(90deg,var(--cyan),#46e0ff);border:none;border-radius:50px;padding:13px 26px;cursor:pointer;transition:transform .2s,box-shadow .3s;box-shadow:0 6px 20px rgba(0,212,255,.3)}
+.reveal-btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,212,255,.45)}
+.reveal-btn:active{transform:scale(.97)}
+.vote-hint{color:var(--muted);font-size:13.5px;display:flex;align-items:center;gap:8px}
+.vote-hint b{color:#fff}
+
+.answer{margin-top:18px;border-radius:16px;padding:18px 20px;opacity:0;transform:translateY(10px);transition:opacity .5s var(--ease),transform .5s var(--ease);border:1px solid var(--border2);background:rgba(2,8,20,.5)}
+.answer.show{opacity:1;transform:none}
+.answer .verdict{font-family:var(--display);font-weight:700;font-size:clamp(20px,2.6vw,30px);display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.badge{font-size:13px;font-weight:700;padding:5px 14px;border-radius:50px;letter-spacing:.06em}
+.badge.ia{background:rgba(0,212,255,.16);color:var(--cyan);border:1px solid var(--border)}
+.badge.hum{background:rgba(52,217,138,.16);color:var(--green);border:1px solid rgba(52,217,138,.4)}
+.answer p{color:var(--muted);font-size:clamp(13.5px,1.5vw,16px);line-height:1.55}
+.answer p b{color:#fff}
+
+.controls{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:10px;background:rgba(5,13,31,.72);backdrop-filter:blur(14px);border:1px solid var(--border2);border-radius:50px;padding:8px 10px}
+.controls button{width:38px;height:38px;border-radius:50%;border:1px solid var(--border2);background:rgba(255,255,255,.05);color:#fff;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:transform .2s,background .2s}
+.controls button:hover{background:rgba(0,212,255,.18)}.controls button:active{transform:scale(.92)}
+.counter{font-family:var(--display);font-weight:600;font-size:13px;color:var(--muted);min-width:54px;text-align:center}.counter b{color:#fff}
+.title-tag{position:fixed;top:16px;right:22px;z-index:30;font-family:var(--display);font-weight:700;font-size:13px;color:var(--gold);letter-spacing:.1em}
+
+.rounds{position:relative}
+.round{position:absolute;inset:0;opacity:0;visibility:hidden;transform:translateY(20px);transition:opacity .5s var(--ease),transform .5s var(--ease),visibility .5s;pointer-events:none}
+.round.on{position:relative;opacity:1;visibility:visible;transform:none;pointer-events:auto}
+
+/* intro & end */
+.center-wrap{text-align:center;max-width:760px}
+.kick{font-family:var(--display);font-weight:600;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);font-size:clamp(12px,1.4vw,15px);margin-bottom:18px}
+h1.big{font-family:var(--display);font-weight:700;font-size:clamp(40px,7vw,84px);line-height:1.02;letter-spacing:-.02em}
+.grad{background:linear-gradient(110deg,var(--cyan),var(--purple) 70%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.center-wrap p{color:var(--muted);font-size:clamp(15px,1.7vw,20px);line-height:1.6;margin-top:20px}
+.start-btn{margin-top:30px;font-family:var(--display);font-weight:600;font-size:16px;color:#04121f;background:var(--gold);border:none;border-radius:50px;padding:15px 34px;cursor:pointer;transition:transform .2s}
+.start-btn:hover{transform:translateY(-2px)}.start-btn:active{transform:scale(.97)}
+.scorebar{display:flex;gap:14px;justify-content:center;margin-top:26px;flex-wrap:wrap}
+.scorebar .pill{font-family:var(--display);font-weight:600;font-size:14px;padding:9px 18px;border-radius:50px;border:1px solid var(--border2);background:var(--panel)}
+
+@media(max-width:620px){.img-wrap img,.img-fallback{width:180px;height:180px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.12s!important}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="orb a"></div><div class="orb b"></div>
+<div id="progress"></div>
+<div class="brand"><b>ICONE</b> ialabs <span class="dot">·</span> Curso IA Jóvenes Emprendedores</div>
+<div class="title-tag">IA o HUMANO</div>
+
+<div class="stage">
+  <div class="card">
+    <div class="rounds" id="rounds">
+
+      <!-- INTRO -->
+      <section class="round on" data-kind="intro">
+        <div class="center-wrap" style="margin:0 auto">
+          <div class="kick">Dinámica de arranque · 20 min</div>
+          <h1 class="big">“IA o <span class="grad">Humano</span>”</h1>
+          <p>Te muestro 5 piezas. El grupo vota en el chat: <b style="color:#fff">¿la hizo una IA o una persona?</b> Tú revelas la respuesta y abrimos la conversación de qué IA del equipo pudo crearla.</p>
+          <button class="start-btn" onclick="go(1)">Empezar ▶</button>
+        </div>
+      </section>
+
+      <!-- 1 TEXTO -->
+      <section class="round" data-kind="play" data-answer="IA">
+        <div class="cat">01 · Texto</div>
+        <div class="piece">
+          <div class="q">¿IA o Humano? · Lee en voz alta y deja que voten</div>
+          <div class="text-piece">“Emprender no es lanzarse al vacío y esperar que aparezcan las alas. Es armar el avión mientras ya vas cayendo, con la calma de saber que cada error te muestra dónde reforzar. Los que llegan lejos no son los que nunca dudan: son los que aprendieron a avanzar con la duda puesta.”</div>
+        </div>
+        <div class="controls-row">
+          <button class="reveal-btn" data-reveal>Revelar respuesta</button>
+          <span class="vote-hint">🗳️ El grupo vota en el chat: <b>IA</b> o <b>Humano</b></span>
+        </div>
+        <div class="answer" data-ans>
+          <div class="verdict"><span class="badge ia">🤖 LO HIZO UNA IA</span></div>
+          <p>Generado en segundos. Suena a mentor humano porque <b>aprendió de miles de ellos</b>. Si no lo notaron, ese es exactamente el punto del curso: la IA ya escribe como nosotros.</p>
+        </div>
+      </section>
+
+      <!-- 2 ESLOGAN -->
+      <section class="round" data-kind="play" data-answer="Humano">
+        <div class="cat">02 · Eslogan</div>
+        <div class="piece">
+          <div class="q">¿IA o Humano? · Un eslogan para una cafetería de Cúcuta</div>
+          <div class="slogan-piece">“Aquí no vendemos café.<br>Vendemos la excusa para quedarte un rato más.”</div>
+        </div>
+        <div class="controls-row">
+          <button class="reveal-btn" data-reveal>Revelar respuesta</button>
+          <span class="vote-hint">🗳️ El grupo vota en el chat: <b>IA</b> o <b>Humano</b></span>
+        </div>
+        <div class="answer" data-ans>
+          <div class="verdict"><span class="badge hum">🧑 LO HIZO UN HUMANO</span></div>
+          <p>Lo escribió la dueña del local. La IA suele llegar a algo <b>correcto</b>; el humano llega a algo con <b>verdad local</b>. Lección: la IA imita, tú aportas el contexto y la emoción real.</p>
+        </div>
+      </section>
+
+      <!-- 3 IMAGEN -->
+      <section class="round" data-kind="play" data-answer="IA">
+        <div class="cat">03 · Imagen</div>
+        <div class="piece">
+          <div class="q">¿IA o Humano? · ¿Esta persona es real?</div>
+          <div class="img-wrap">
+            <img id="aiface" alt="retrato" referrerpolicy="no-referrer" src="https://thispersondoesnotexist.com/">
+            <div class="img-fallback" id="faceFallback">
+              <span style="font-size:30px">🖼️</span>
+              <span>Abre en vivo <b style="color:#fff">thispersondoesnotexist.com</b> — cada recarga genera una cara nueva que no existe.</span>
+            </div>
+          </div>
+          <div class="hint-line">Tip: recarga la página y aparece otra cara distinta. Ninguna existe.</div>
+        </div>
+        <div class="controls-row">
+          <button class="reveal-btn" data-reveal>Revelar respuesta</button>
+          <span class="vote-hint">🗳️ El grupo vota en el chat: <b>IA</b> o <b>Humano</b></span>
+        </div>
+        <div class="answer" data-ans>
+          <div class="verdict"><span class="badge ia">🤖 LO HIZO UNA IA</span></div>
+          <p>Esta persona <b>no existe</b>: la generó una IA. “Ver para creer” ya no alcanza. Por eso hoy importa más saber <b>pedir y verificar</b> que solo mirar.</p>
+        </div>
+      </section>
+
+      <!-- 4 VOZ -->
+      <section class="round" data-kind="play" data-answer="IA">
+        <div class="cat">04 · Voz</div>
+        <div class="piece">
+          <div class="q">¿IA o Humano? · Reproduce el audio (o léelo tú) y deja que voten</div>
+          <div class="voice-piece">“Buenas, le habla María de Créditos Ya. Vi que se interesó en nuestro plan y quería contarle, sin compromiso, cómo le quedaría la cuota mensual…”</div>
+          <div class="voice-meta"><div class="wave"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div> Mensaje de voz · 0:09</div>
+        </div>
+        <div class="controls-row">
+          <button class="reveal-btn" data-reveal>Revelar respuesta</button>
+          <span class="vote-hint">🗳️ El grupo vota en el chat: <b>IA</b> o <b>Humano</b></span>
+        </div>
+        <div class="answer" data-ans>
+          <div class="verdict"><span class="badge ia">🤖 LO HIZO UNA IA</span></div>
+          <p>Es una <b>voz sintética</b>. Hoy una IA llama, conversa y agenda sola. Úsalo a tu favor (atención 24/7) y protégete: <b>no todo lo que suena humano lo es</b>.</p>
+        </div>
+      </section>
+
+      <!-- 5 LOGO -->
+      <section class="round" data-kind="play" data-answer="Humano">
+        <div class="cat">05 · Logo</div>
+        <div class="piece">
+          <div class="q">¿IA o Humano? · El logo de una marca de café</div>
+          <div class="logo-stage">
+            <svg width="300" height="170" viewBox="0 0 300 170" xmlns="http://www.w3.org/2000/svg" aria-label="Logo Brío Café">
+              <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00d4ff"/><stop offset="1" stop-color="#7b2fff"/></linearGradient></defs>
+              <circle cx="70" cy="70" r="48" fill="none" stroke="url(#lg)" stroke-width="5"/>
+              <path d="M70 44 C58 56 58 70 70 82 C82 94 82 108 70 120" fill="none" stroke="url(#lg)" stroke-width="6" stroke-linecap="round"/>
+              <path d="M92 44 C80 56 80 70 92 82 C104 94 104 108 92 120" fill="none" stroke="#ffcb5e" stroke-width="6" stroke-linecap="round" opacity=".85"/>
+              <text x="138" y="72" font-family="Space Grotesk, sans-serif" font-size="40" font-weight="700" fill="#fff">Brío</text>
+              <text x="138" y="108" font-family="Space Grotesk, sans-serif" font-size="22" font-weight="500" letter-spacing="6" fill="#9fb3c8">CAFÉ</text>
+            </svg>
+          </div>
+        </div>
+        <div class="controls-row">
+          <button class="reveal-btn" data-reveal>Revelar respuesta</button>
+          <span class="vote-hint">🗳️ El grupo vota en el chat: <b>IA</b> o <b>Humano</b></span>
+        </div>
+        <div class="answer" data-ans>
+          <div class="verdict"><span class="badge hum">🧑 LO HIZO UN HUMANO</span></div>
+          <p>Lo diseñó una persona. Una IA lo habría hecho en 30 segundos… pero ¿habría captado <b>la idea</b> detrás? Ahí sigue tu trabajo: <b>dirigir</b>, no solo producir.</p>
+        </div>
+      </section>
+
+      <!-- END -->
+      <section class="round" data-kind="end">
+        <div class="center-wrap" style="margin:0 auto">
+          <div class="kick">Cierre de la dinámica</div>
+          <h1 class="big" style="font-size:clamp(30px,5.2vw,60px)">Ya no se <span class="grad">distingue</span>.</h1>
+          <p>La pregunta dejó de ser <b style="color:#fff">¿la IA puede hacerlo?</b> y pasó a ser <b style="color:#fff">¿yo sé pedírselo?</b> Eso es lo que vamos a entrenar en las próximas 8 horas.</p>
+          <div class="scorebar">
+            <span class="pill" style="color:var(--cyan)">3 piezas → IA</span>
+            <span class="pill" style="color:var(--green)">2 piezas → Humano</span>
+          </div>
+          <button class="start-btn" onclick="go(0)">↺ Volver a empezar</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button id="prev" aria-label="Anterior">‹</button>
+  <div class="counter"><b id="cur">Intro</b></div>
+  <button id="next" aria-label="Siguiente">›</button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var rounds=Array.prototype.slice.call(document.querySelectorAll('.round'));
+  var total=rounds.length, i=0;
+  var cur=document.getElementById('cur'), prog=document.getElementById('progress');
+  function label(n){ if(n===0)return 'Intro'; if(n===total-1)return 'Fin'; return String(n).padStart(2,'0')+' / 5'; }
+  window.go=function(n){
+    n=Math.max(0,Math.min(total-1,n));
+    rounds.forEach(function(r,k){ r.classList.toggle('on',k===n); });
+    i=n; cur.textContent=label(n);
+    prog.style.width=(n/(total-1)*100)+'%';
+    // reset any revealed answers when leaving
+    rounds.forEach(function(r){ var a=r.querySelector('[data-ans]'); if(a)a.classList.remove('show'); var b=r.querySelector('[data-reveal]'); if(b){b.textContent='Revelar respuesta';b.disabled=false;b.style.opacity=1;} });
+  };
+  function next(){ go(i+1); } function prev(){ go(i-1); }
+  document.getElementById('next').onclick=next;
+  document.getElementById('prev').onclick=prev;
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();next();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();prev();}
+    else if(e.key===' '){ e.preventDefault(); var r=rounds[i].querySelector('[data-reveal]'); if(r&&!rounds[i].querySelector('[data-ans]').classList.contains('show')){r.click();} else {next();} }
+    else if(e.key==='Home'){go(0);} else if(e.key==='End'){go(total-1);}
+  });
+  // reveal buttons
+  document.querySelectorAll('[data-reveal]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var ans=btn.closest('.round').querySelector('[data-ans]');
+      ans.classList.add('show'); btn.textContent='Respuesta revelada ✓'; btn.disabled=true; btn.style.opacity=.6;
+    });
+  });
+  // image fallback
+  var face=document.getElementById('aiface');
+  if(face){ face.addEventListener('error',function(){ face.style.display='none'; var fb=document.getElementById('faceFallback'); if(fb)fb.style.display='flex'; });
+    // cache-bust so a fresh face loads
+    face.src='https://thispersondoesnotexist.com/?t='+Date.now();
+  }
+  go(0);
+
+  // particle bg
+  var c=document.getElementById('bg'),x=c.getContext('2d'),W,H,pts;
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function resize(){W=c.width=innerWidth;H=c.height=innerHeight;build();}
+  function build(){var d=Math.min(innerWidth*innerHeight/16000,100);pts=[];for(var k=0;k<d;k++)pts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,r:Math.random()*1.5+.5});}
+  function draw(){x.clearRect(0,0,W,H);for(var a=0;a<pts.length;a++){var p=pts[a];p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;x.beginPath();x.arc(p.x,p.y,p.r,0,6.283);x.fillStyle='rgba(0,212,255,.5)';x.fill();for(var b=a+1;b<pts.length;b++){var q=pts[b],dx=p.x-q.x,dy=p.y-q.y,dd=dx*dx+dy*dy;if(dd<12000){x.strokeStyle='rgba(123,47,255,'+(1-dd/12000)*.28+')';x.lineWidth=.6;x.beginPath();x.moveTo(p.x,p.y);x.lineTo(q.x,q.y);x.stroke();}}}requestAnimationFrame(draw);}
+  window.addEventListener('resize',resize);resize();
+  if(reduce){x.clearRect(0,0,W,H);for(var s=0;s<pts.length;s++){var p=pts[s];x.beginPath();x.arc(p.x,p.y,p.r,0,6.283);x.fillStyle='rgba(0,212,255,.4)';x.fill();}}else{draw();}
+})();
+</script>
+</body>
+</html>
